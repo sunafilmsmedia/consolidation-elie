@@ -1,17 +1,24 @@
+import OpenAI from "openai";
 import type { CalculatorInput, CalculatorResult } from "@/types/calculator";
 import { LEVEL_LABELS } from "./scoring";
-import { formatCurrency } from "./format";
+import {
+  formatCurrency,
+  DEBT_TYPE_LABELS,
+  PRIMARY_GOAL_LABELS,
+  USER_STATUS_LABELS,
+} from "./format";
 import type { RecommendationContent } from "./recommendation";
 
 /**
- * Génération de la réponse IA personnalisée.
+ * Génération de la réponse IA personnalisée (côté serveur uniquement).
  *
- * --- STUB ---
- * Pour l'instant, on retourne un texte construit localement (déterministe),
- * dans le ton/structure attendus. Quand la clé OpenAI sera disponible,
- * remplacer le corps de `generateAnalysis` par un appel serveur à l'API,
- * en gardant la même signature et le même fallback en cas d'échec.
+ * Si OPENAI_API_KEY est défini, on appelle l'API OpenAI. Sinon (ou en cas
+ * d'échec), on retombe proprement sur un texte construit localement —
+ * le formulaire ne casse jamais et l'utilisateur voit toujours un résultat.
  */
+
+// Modèle configurable via env (par défaut un modèle rapide et économique).
+const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
 
 export const SYSTEM_PROMPT = `Tu es un assistant spécialisé en vulgarisation hypothécaire pour un courtier hypothécaire au Canada.
 Ton rôle est d'expliquer simplement à l'utilisateur son potentiel d'économie par consolidation de dettes ou refinancement hypothécaire.
@@ -21,7 +28,12 @@ Tu ne dois jamais garantir une économie.
 Tu ne dois jamais dire que l'utilisateur est admissible avec certitude.
 Tu dois toujours préciser que le résultat est une estimation basée sur les informations fournies.
 Tu dois encourager l'utilisateur à valider sa situation avec un courtier hypothécaire.
-Écris dans un français québécois professionnel, simple et humain.`;
+Écris dans un français québécois professionnel, simple et humain. Ne sois pas trop technique.
+Maximum 220 mots. Structure ta réponse en 4 sections avec ces titres exacts, chacun sur sa propre ligne :
+Résumé simple
+Ce que l'estimation veut dire
+Pourquoi ça pourrait valoir la peine d'être analysé
+Prochaine étape recommandée`;
 
 export interface AIResult {
   text: string;
@@ -33,14 +45,63 @@ export async function generateAnalysis(
   result: Omit<CalculatorResult, "aiResponse">,
   recommendation: RecommendationContent
 ): Promise<AIResult> {
-  try {
-    // TODO: brancher l'appel OpenAI côté serveur ici.
-    // const completion = await openai.chat.completions.create({ ... })
-    // return { text: completion..., generated: true };
-    return { text: buildLocalAnalysis(input, result, recommendation), generated: true };
-  } catch {
-    return { text: staticFallback(input, result), generated: false };
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  // Pas de clé : mode local (stub) — texte déterministe.
+  if (!apiKey) {
+    return { text: buildLocalAnalysis(input, result, recommendation), generated: false };
   }
+
+  try {
+    const openai = new OpenAI({ apiKey });
+    const completion = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
+      max_tokens: 600,
+      temperature: 0.6,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: buildUserPrompt(input, result, recommendation) },
+      ],
+    });
+
+    const text = completion.choices[0]?.message?.content?.trim();
+    if (!text) throw new Error("Réponse IA vide");
+    return { text, generated: true };
+  } catch (e) {
+    console.error("AI_GENERATION_FAILED", e);
+    return { text: buildLocalAnalysis(input, result, recommendation), generated: false };
+  }
+}
+
+function buildUserPrompt(
+  input: CalculatorInput,
+  result: Omit<CalculatorResult, "aiResponse">,
+  recommendation: RecommendationContent
+): string {
+  const debts = input.debtTypes.map((t) => DEBT_TYPE_LABELS[t]).join(", ");
+  return `Voici les données d'un utilisateur ayant complété un calculateur de consolidation de dettes :
+
+Prénom : ${input.firstName}
+Statut : ${USER_STATUS_LABELS[input.userStatus]}
+Objectif principal : ${PRIMARY_GOAL_LABELS[input.primaryGoal]}
+Types de dettes : ${debts}
+Montant total des dettes : ${formatCurrency(input.totalDebtAmount)}
+Paiements mensuels actuels estimés : ${formatCurrency(result.estimatedCurrentDebtPayment)}
+Valeur de propriété : ${input.propertyValue ? formatCurrency(input.propertyValue) : "n/a"}
+Solde hypothécaire : ${input.mortgageBalance ? formatCurrency(input.mortgageBalance) : "n/a"}
+Équité disponible estimée : ${result.availableEquity ? formatCurrency(result.availableEquity) : "n/a"}
+Montant potentiellement disponible au refinancement : ${
+    result.potentialCashAvailable ? formatCurrency(result.potentialCashAvailable) : "n/a"
+  }
+Économie mensuelle estimée : ${formatCurrency(result.estimatedMonthlySavings)}
+Économie annuelle estimée : ${formatCurrency(result.estimatedAnnualSavings)}
+Score de potentiel : ${result.savingsScore}/100
+Niveau de potentiel : ${LEVEL_LABELS[result.potentialLevel]}
+Type de recommandation interne : ${recommendation.message}
+
+Génère la réponse personnalisée en 4 sections (titres exacts demandés dans tes consignes).
+Utilise toujours des termes comme « pourrait », « semble », « estimation », « à valider ».
+Ne garantis jamais le résultat et ne dis jamais que la personne est approuvée.`;
 }
 
 function buildLocalAnalysis(
@@ -70,13 +131,4 @@ function buildLocalAnalysis(
     "Prochaine étape recommandée",
     "La meilleure prochaine étape serait d'en discuter avec un courtier hypothécaire qui pourra valider tes options réelles, sans engagement de ta part.",
   ].join("\n");
-}
-
-function staticFallback(
-  input: CalculatorInput,
-  result: Omit<CalculatorResult, "aiResponse">
-): string {
-  return `Bonjour ${input.firstName}, ton estimation est prête. Selon les informations fournies, ton potentiel d'économie estimé est de ${formatCurrency(
-    result.estimatedMonthlySavings
-  )} par mois. Cette estimation devrait être validée avec un courtier hypothécaire.`;
 }
