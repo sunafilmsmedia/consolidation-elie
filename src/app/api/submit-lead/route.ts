@@ -18,15 +18,6 @@ export async function POST(request: Request) {
 
   const parsed = calculatorInputSchema.safeParse(body);
   if (!parsed.success) {
-    // Honeypot rempli => spam : on répond 200 sans rien faire.
-    if (
-      typeof body === "object" &&
-      body !== null &&
-      "company" in body &&
-      (body as { company?: string }).company
-    ) {
-      return NextResponse.json({ success: true, leadId: "ignored", resultUrl: "/" });
-    }
     return NextResponse.json(
       {
         success: false,
@@ -37,12 +28,11 @@ export async function POST(request: Request) {
     );
   }
 
-  // On retire le honeypot avant de traiter.
-  const { company: _company, ...input } = parsed.data;
+  const input = parsed.data;
   const leadId = randomUUID();
 
   try {
-    const { result } = await processLead(input as CalculatorInput);
+    const { result } = await processLead(input);
 
     // Construction + envoi CRM (stub). Un échec ne bloque pas l'utilisateur.
     const crmPayload = buildCrmPayload(input as CalculatorInput, result);

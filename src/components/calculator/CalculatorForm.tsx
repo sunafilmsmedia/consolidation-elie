@@ -59,7 +59,6 @@ export default function CalculatorForm() {
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [honeypot, setHoneypot] = useState("");
 
   const isOwner = answers.userStatus === "owner";
   const hasMortgage = answers.hasMortgageChoice === "yes" || answers.hasMortgageChoice === "unsure";
@@ -110,7 +109,7 @@ export default function CalculatorForm() {
     setSubmitting(true);
     setError(null);
 
-    const payload = buildPayload(answers, honeypot);
+    const payload = buildPayload(answers);
     const startedAt = Date.now();
 
     try {
@@ -172,18 +171,6 @@ export default function CalculatorForm() {
               {error}
             </p>
           )}
-
-          {/* Honeypot anti-spam (caché). */}
-          <input
-            type="text"
-            name="company"
-            value={honeypot}
-            onChange={(e) => setHoneypot(e.target.value)}
-            tabIndex={-1}
-            autoComplete="off"
-            aria-hidden="true"
-            className="absolute left-[-9999px] h-0 w-0 opacity-0"
-          />
 
           <div className="mt-8 flex items-center gap-3">
             {clampedIndex > 0 && (
@@ -272,7 +259,7 @@ function validateStep(step: StepKey, a: Answers): boolean {
 
 /* ------------------------------- Payload final ------------------------------ */
 
-function buildPayload(a: Answers, honeypot: string): CalculatorInput & { company: string } {
+function buildPayload(a: Answers): CalculatorInput {
   const ownsProperty = a.userStatus === "owner";
   const propertyPaid = a.hasMortgageChoice === "no";
 
@@ -300,7 +287,6 @@ function buildPayload(a: Answers, honeypot: string): CalculatorInput & { company
     householdIncomeRange: a.householdIncomeRange,
     urgencyLevel: a.urgencyLevel!,
     consentContact: a.consentContact === true,
-    company: honeypot,
   };
 }
 

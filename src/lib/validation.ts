@@ -51,9 +51,6 @@ export const calculatorInputSchema = z
     consentContact: z.literal(true, {
       errorMap: () => ({ message: "Le consentement est requis" }),
     }),
-
-    // Honeypot anti-spam : doit rester vide.
-    company: z.string().max(0).optional(),
   })
   .refine((d) => !d.ownsProperty || d.propertyValue !== undefined, {
     message: "La valeur de la propriété est requise pour les propriétaires",
