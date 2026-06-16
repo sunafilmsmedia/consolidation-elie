@@ -27,12 +27,9 @@ export const PRIMARY_GOAL_OPTIONS: ChoiceOption<PrimaryGoal>[] = [
 
 export const DEBT_TYPE_OPTIONS: ChoiceOption<DebtType>[] = [
   { label: "Cartes de crédit", value: "credit_card" },
-  { label: "Prêts personnels", value: "personal_loan" },
+  { label: "Prêt personnel", value: "personal_loan" },
   { label: "Marge de crédit", value: "line_of_credit" },
   { label: "Prêt automobile", value: "car_loan" },
-  { label: "Prêt étudiant", value: "student_loan" },
-  { label: "Achat maintenant / paiement plus tard", value: "buy_now_pay_later" },
-  { label: "Dettes fiscales", value: "tax_debt" },
   { label: "Autre", value: "other" },
   { label: "Aucune dette importante", value: "none" },
 ];

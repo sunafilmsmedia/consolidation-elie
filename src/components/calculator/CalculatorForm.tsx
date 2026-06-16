@@ -40,6 +40,18 @@ interface Answers extends Partial<CalculatorInput> {
   dontKnowMortgagePayment?: boolean;
 }
 
+// Étapes à choix unique : un clic sélectionne ET avance instantanément.
+const AUTO_ADVANCE_STEPS = new Set<StepKey>([
+  "userStatus",
+  "primaryGoal",
+  "totalDebtAmount",
+  "hasMortgage",
+  "propertyValue",
+  "mortgageBalance",
+  "income",
+  "urgency",
+]);
+
 export default function CalculatorForm() {
   const router = useRouter();
   const [answers, setAnswers] = useState<Answers>({});
@@ -69,6 +81,7 @@ export default function CalculatorForm() {
 
   const clampedIndex = Math.min(stepIndex, steps.length - 1);
   const currentStep = steps[clampedIndex];
+  const isAutoAdvance = AUTO_ADVANCE_STEPS.has(currentStep);
 
   const preview = useMemo(() => computeLivePreview(answers), [answers]);
 
@@ -138,7 +151,7 @@ export default function CalculatorForm() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-ink via-[#111a33] to-ink text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-10 lg:grid-cols-[1fr_360px] lg:py-16">
         <div>
           <ProgressBar current={clampedIndex + 1} total={steps.length} />
@@ -148,6 +161,7 @@ export default function CalculatorForm() {
               step={currentStep}
               answers={answers}
               update={update}
+              advance={goNext}
               isOwner={isOwner}
             />
           </div>
@@ -187,6 +201,8 @@ export default function CalculatorForm() {
               >
                 Voir mon résultat IA
               </button>
+            ) : isAutoAdvance ? (
+              <p className="text-sm text-white/40">Touche une réponse pour continuer →</p>
             ) : (
               <button
                 onClick={goNext}
@@ -293,10 +309,17 @@ interface StepContentProps {
   step: StepKey;
   answers: Answers;
   update: (patch: Answers) => void;
+  advance: () => void;
   isOwner: boolean;
 }
 
-function StepContent({ step, answers, update }: StepContentProps) {
+function StepContent({ step, answers, update, advance }: StepContentProps) {
+  // Choix unique : on sélectionne ET on passe à l'étape suivante immédiatement.
+  const pick = (patch: Answers) => {
+    update(patch);
+    advance();
+  };
+
   switch (step) {
     case "userStatus":
       return (
@@ -304,7 +327,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Quelle est ta situation actuelle?"
           options={USER_STATUS_OPTIONS}
           value={answers.userStatus}
-          onSelect={(v) => update({ userStatus: v })}
+          onSelect={(v) => pick({ userStatus: v })}
         />
       );
     case "primaryGoal":
@@ -313,7 +336,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Qu'est-ce que tu aimerais améliorer en premier?"
           options={PRIMARY_GOAL_OPTIONS}
           value={answers.primaryGoal}
-          onSelect={(v) => update({ primaryGoal: v })}
+          onSelect={(v) => pick({ primaryGoal: v })}
         />
       );
     case "debtTypes":
@@ -332,7 +355,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Environ combien dois-tu au total, sans compter ton hypothèque?"
           options={DEBT_AMOUNT_OPTIONS}
           value={answers.totalDebtAmount}
-          onSelect={(v) => update({ totalDebtAmount: v })}
+          onSelect={(v) => pick({ totalDebtAmount: v })}
         />
       );
     case "currentDebtMonthlyPayment":
@@ -354,7 +377,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="As-tu actuellement une hypothèque sur ta propriété?"
           options={HAS_MORTGAGE_OPTIONS}
           value={answers.hasMortgageChoice}
-          onSelect={(v) => update({ hasMortgageChoice: v })}
+          onSelect={(v) => pick({ hasMortgageChoice: v })}
         />
       );
     case "propertyValue":
@@ -363,7 +386,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Quelle est la valeur approximative de ta propriété aujourd'hui?"
           options={PROPERTY_VALUE_OPTIONS}
           value={answers.propertyValue}
-          onSelect={(v) => update({ propertyValue: v })}
+          onSelect={(v) => pick({ propertyValue: v })}
         />
       );
     case "mortgageBalance":
@@ -372,7 +395,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Combien reste-t-il environ sur ton hypothèque?"
           options={MORTGAGE_BALANCE_OPTIONS}
           value={answers.mortgageBalance}
-          onSelect={(v) => update({ mortgageBalance: v })}
+          onSelect={(v) => pick({ mortgageBalance: v })}
         />
       );
     case "mortgageMonthlyPayment":
@@ -396,7 +419,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="Quel est le revenu annuel approximatif de ton foyer avant impôts?"
           options={INCOME_OPTIONS}
           value={answers.householdIncomeRange}
-          onSelect={(v) => update({ householdIncomeRange: v })}
+          onSelect={(v) => pick({ householdIncomeRange: v })}
         />
       );
     case "urgency":
@@ -405,7 +428,7 @@ function StepContent({ step, answers, update }: StepContentProps) {
           title="À quel point aimerais-tu réduire tes paiements rapidement?"
           options={URGENCY_OPTIONS}
           value={answers.urgencyLevel}
-          onSelect={(v) => update({ urgencyLevel: v })}
+          onSelect={(v) => pick({ urgencyLevel: v })}
         />
       );
     case "contact":
