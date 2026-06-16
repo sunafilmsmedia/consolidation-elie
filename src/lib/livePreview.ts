@@ -7,6 +7,7 @@ export interface LivePreview {
   score: number;
   level: PotentialLevel | null;
   hasEnoughInfo: boolean;
+  monthlySavings: number;
 }
 
 /**
@@ -22,7 +23,7 @@ export function computeLivePreview(answers: Partial<CalculatorInput>): LivePrevi
     typeof answers.totalDebtAmount === "number";
 
   if (!hasEnoughInfo) {
-    return { score: 0, level: null, hasEnoughInfo: false };
+    return { score: 0, level: null, hasEnoughInfo: false, monthlySavings: 0 };
   }
 
   const input: CalculatorInput = {
@@ -50,5 +51,10 @@ export function computeLivePreview(answers: Partial<CalculatorInput>): LivePrevi
     availableEquity: calc.availableEquity,
   });
 
-  return { score, level: scoreToLevel(score), hasEnoughInfo: true };
+  return {
+    score,
+    level: scoreToLevel(score),
+    hasEnoughInfo: true,
+    monthlySavings: calc.estimatedMonthlySavings,
+  };
 }

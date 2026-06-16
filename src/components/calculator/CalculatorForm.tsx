@@ -7,6 +7,7 @@ import Thermometer from "@/components/ui/Thermometer";
 import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingAI from "./LoadingAI";
 import { computeLivePreview } from "@/lib/livePreview";
+import { formatCurrency } from "@/lib/format";
 import {
   DEBT_AMOUNT_OPTIONS,
   DEBT_TYPE_OPTIONS,
@@ -32,6 +33,7 @@ type StepKey =
   | "mortgageMonthlyPayment"
   | "income"
   | "urgency"
+  | "savingsReveal"
   | "contact";
 
 interface Answers extends Partial<CalculatorInput> {
@@ -75,7 +77,7 @@ export default function CalculatorForm() {
       base.push("hasMortgage", "propertyValue");
       if (hasMortgage) base.push("mortgageBalance", "mortgageMonthlyPayment");
     }
-    base.push("income", "urgency", "contact");
+    base.push("income", "urgency", "savingsReveal", "contact");
     return base;
   }, [isOwner, hasMortgage]);
 
@@ -240,10 +242,9 @@ function validateStep(step: StepKey, a: Answers): boolean {
     case "totalDebtAmount":
       return typeof a.totalDebtAmount === "number";
     case "currentDebtMonthlyPayment":
-      return (
-        a.dontKnowDebtPayment === true ||
-        (typeof a.currentDebtMonthlyPayment === "number" && a.currentDebtMonthlyPayment >= 0)
-      );
+      return typeof a.currentDebtMonthlyPayment === "number" && a.currentDebtMonthlyPayment > 0;
+    case "savingsReveal":
+      return true;
     case "hasMortgage":
       return !!a.hasMortgageChoice;
     case "propertyValue":
@@ -287,9 +288,7 @@ function buildPayload(a: Answers, honeypot: string): CalculatorInput & { company
     primaryGoal: a.primaryGoal!,
     debtTypes: a.debtTypes ?? [],
     totalDebtAmount: a.totalDebtAmount ?? 0,
-    currentDebtMonthlyPayment: a.dontKnowDebtPayment
-      ? undefined
-      : a.currentDebtMonthlyPayment,
+    currentDebtMonthlyPayment: a.currentDebtMonthlyPayment,
     ownsProperty,
     hasMortgage: ownsProperty ? !propertyPaid : undefined,
     propertyValue: ownsProperty ? a.propertyValue : undefined,
@@ -364,11 +363,10 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
           title="Combien paies-tu environ chaque mois pour ces dettes?"
           placeholder="Ex. 850 $ / mois"
           value={answers.currentDebtMonthlyPayment}
-          unknown={answers.dontKnowDebtPayment ?? false}
-          onValue={(v) => update({ currentDebtMonthlyPayment: v, dontKnowDebtPayment: false })}
-          onUnknown={() =>
-            update({ dontKnowDebtPayment: true, currentDebtMonthlyPayment: undefined })
-          }
+          unknown={false}
+          allowUnknown={false}
+          onValue={(v) => update({ currentDebtMonthlyPayment: v })}
+          onUnknown={() => {}}
         />
       );
     case "hasMortgage":
@@ -431,6 +429,8 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
           onSelect={(v) => pick({ urgencyLevel: v })}
         />
       );
+    case "savingsReveal":
+      return <SavingsReveal answers={answers} />;
     case "contact":
       return <ContactStep answers={answers} update={update} />;
     default:
@@ -587,6 +587,7 @@ function NumberWithUnknown({
   unknown,
   onValue,
   onUnknown,
+  allowUnknown = true,
 }: {
   title: string;
   placeholder: string;
@@ -594,6 +595,7 @@ function NumberWithUnknown({
   unknown: boolean;
   onValue: (v: number | undefined) => void;
   onUnknown: () => void;
+  allowUnknown?: boolean;
 }) {
   return (
     <div>
@@ -605,6 +607,7 @@ function NumberWithUnknown({
           placeholder={placeholder}
           value={value ?? ""}
           disabled={unknown}
+          autoFocus
           onChange={(e) => {
             const digits = e.target.value.replace(/[^\d]/g, "");
             onValue(digits ? Number(digits) : undefined);
@@ -612,19 +615,80 @@ function NumberWithUnknown({
           className="h-14 w-full rounded-2xl border border-white/15 bg-white/5 px-5 text-lg text-white placeholder:text-slate-500 focus:border-ai focus:outline-none disabled:opacity-40"
         />
       </div>
-      <button
-        onClick={onUnknown}
-        className={`mt-4 rounded-xl border px-4 py-2 text-sm font-medium transition ${
-          unknown
-            ? "border-ai bg-ai/15 text-white"
-            : "border-white/15 text-slate-300 hover:bg-white/5"
-        }`}
-      >
-        Je ne sais pas
-      </button>
-      <p className="mt-3 text-xs text-slate-500">
-        Si tu ne sais pas, on estimera ce montant à partir de tes autres réponses.
-      </p>
+      {allowUnknown && (
+        <>
+          <button
+            onClick={onUnknown}
+            className={`mt-4 rounded-xl border px-4 py-2 text-sm font-medium transition ${
+              unknown
+                ? "border-ai bg-ai/15 text-white"
+                : "border-white/15 text-slate-300 hover:bg-white/5"
+            }`}
+          >
+            Je ne sais pas
+          </button>
+          <p className="mt-3 text-xs text-slate-500">
+            Si tu ne sais pas, on estimera ce montant à partir de tes autres réponses.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SavingsReveal({ answers }: { answers: Answers }) {
+  const preview = computeLivePreview(answers);
+  const savings = preview.monthlySavings;
+  const hasSavings = savings >= 50;
+
+  // Fourchette autour de l'estimation (± ~15 %), arrondie à la dizaine.
+  const roundTo10 = (n: number) => Math.max(Math.round(n / 10) * 10, 0);
+  const low = roundTo10(savings * 0.85);
+  const high = roundTo10(savings * 1.15);
+
+  return (
+    <div className="text-center sm:text-left">
+      <span className="ai-gradient-text text-sm font-bold uppercase tracking-wide">
+        Ton estimation est prête
+      </span>
+
+      {hasSavings ? (
+        <>
+          <h2 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">
+            Tu pourrais potentiellement économiser
+          </h2>
+          <p className="mt-4 text-4xl font-extrabold text-neon sm:text-5xl">
+            {formatCurrency(low)} – {formatCurrency(high)}
+            <span className="ml-1 text-lg font-semibold text-white/70">/ mois</span>
+          </p>
+          <p className="mt-4 max-w-xl text-base text-white/70">
+            Selon les informations fournies, voici la fourchette d&apos;économie mensuelle
+            que tu pourrais réaliser en consolidant tes dettes. C&apos;est une estimation
+            qui reste à valider.
+          </p>
+        </>
+      ) : (
+        <>
+          <h2 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">
+            Ta situation mérite une analyse plus poussée
+          </h2>
+          <p className="mt-4 max-w-xl text-base text-white/70">
+            Une consolidation ne semble pas réduire tes paiements selon les informations
+            fournies, mais elle pourrait quand même simplifier ta situation ou réduire le
+            coût total de tes dettes. Une analyse complète permettrait d&apos;y voir clair.
+          </p>
+        </>
+      )}
+
+      <div className="mt-6 rounded-2xl border border-neon/30 bg-neon/5 p-5">
+        <p className="text-base font-semibold text-white">
+          Veux-tu recevoir ton analyse de dossier personnalisée?
+        </p>
+        <p className="mt-1 text-sm text-white/60">
+          Entre tes coordonnées à l&apos;étape suivante pour recevoir ton analyse complète,
+          gratuitement et sans engagement.
+        </p>
+      </div>
     </div>
   );
 }
