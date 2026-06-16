@@ -13,9 +13,9 @@ interface ThermometerProps {
 const LEVEL_COLORS: Record<PotentialLevel, string> = {
   low: "#9ca3af",
   moderate: "#a3e635",
-  good: "#39FF14",
-  strong: "#22ff8c",
-  very_strong: "#00ffa3",
+  good: "#2FE06A",
+  strong: "#22d178",
+  very_strong: "#13c97a",
 };
 
 export default function Thermometer({
@@ -25,7 +25,7 @@ export default function Thermometer({
   compact = false,
 }: ThermometerProps) {
   const fill = hasEnoughInfo ? Math.max(score, 6) : 0;
-  const color = level ? LEVEL_COLORS[level] : "#39FF14";
+  const color = level ? LEVEL_COLORS[level] : "#2FE06A";
   const label = hasEnoughInfo && level ? LEVEL_LABELS[level] : "À découvrir";
   const description =
     hasEnoughInfo && level

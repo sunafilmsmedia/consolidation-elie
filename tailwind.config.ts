@@ -6,10 +6,10 @@ const config: Config = {
     extend: {
       colors: {
         ink: "#060807", // noir profond (léger ton vert)
-        brand: "#39FF14", // vert fluo principal
-        ai: "#00E676", // vert émeraude néon (partenaire de dégradé)
-        neon: "#39FF14",
-        savings: "#39FF14",
+        brand: "#2FE06A", // vert vif principal (moins fluo)
+        ai: "#13C97A", // vert émeraude (partenaire de dégradé)
+        neon: "#2FE06A",
+        savings: "#2FE06A",
         alert: "#F97316",
         surface: "#0b0f0c",
         muted: "#94a3b8",
@@ -20,8 +20,8 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 10px 40px -12px rgba(0, 0, 0, 0.6)",
-        glow: "0 0 0 1px rgba(57,255,20,0.35), 0 0 28px -4px rgba(57,255,20,0.55)",
-        neon: "0 0 24px -2px rgba(57,255,20,0.7)",
+        glow: "0 0 0 1px rgba(47,224,106,0.35), 0 0 28px -4px rgba(47,224,106,0.5)",
+        neon: "0 0 24px -2px rgba(47,224,106,0.65)",
       },
       keyframes: {
         gradientMove: {

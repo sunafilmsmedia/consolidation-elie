@@ -7,7 +7,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-6 py-12 lg:flex-row lg:items-center lg:py-24">
         {/* Colonne gauche */}
-        <div className="flex-1 animate-fadeUp">
+        <div className="flex-1 animate-fadeUp text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">
             <span className="h-2 w-2 rounded-full bg-savings" />
             Gratuit • Sans engagement • Aucun impact sur ton crédit
@@ -21,7 +21,7 @@ export default function LandingPage() {
             chaque mois en consolidant tes dettes?
           </h1>
 
-          <p className="mt-6 max-w-xl text-lg text-slate-300">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-slate-300">
             Réponds à quelques questions simples et notre calculateur intelligent estimera si une
             consolidation ou un refinancement pourrait réduire tes paiements mensuels.
           </p>
@@ -30,7 +30,7 @@ export default function LandingPage() {
             Analyse intelligente propulsée par l&apos;IA
           </p>
 
-          <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <div className="mt-8 flex justify-center">
             <Link
               href="/calculator"
               className="inline-flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-extrabold text-black shadow-glow transition hover:brightness-110 sm:w-auto"
