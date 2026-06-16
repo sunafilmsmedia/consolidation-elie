@@ -3,7 +3,7 @@ import Thermometer from "@/components/ui/Thermometer";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-ink via-[#111a33] to-ink text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-6 py-12 lg:flex-row lg:items-center lg:py-24">
         {/* Colonne gauche */}
         <div className="flex-1 animate-fadeUp">
@@ -13,7 +13,11 @@ export default function LandingPage() {
           </span>
 
           <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-            Combien pourrais-tu économiser chaque mois en consolidant tes dettes?
+            Combien pourrais-tu{" "}
+            <span className="neon-word inline-block pr-1 align-baseline text-[1.15em] leading-none">
+              économiser
+            </span>{" "}
+            chaque mois en consolidant tes dettes?
           </h1>
 
           <p className="mt-6 max-w-xl text-lg text-slate-300">
@@ -28,7 +32,7 @@ export default function LandingPage() {
           <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
             <Link
               href="/calculator"
-              className="inline-flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-bold text-white shadow-glow transition hover:brightness-110 sm:w-auto"
+              className="inline-flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-extrabold text-black shadow-glow transition hover:brightness-110 sm:w-auto"
             >
               Calculer mon potentiel d&apos;économie
             </Link>

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ThankYouPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-ink via-[#111a33] to-ink px-6 text-center text-white">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-black via-[#0a120c] to-black px-6 text-center text-white">
       <div className="max-w-md animate-fadeUp">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-savings/20 text-3xl">
           ✓

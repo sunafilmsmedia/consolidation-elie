@@ -5,20 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0F172A",
-        brand: "#2563EB",
-        ai: "#A855F7",
-        savings: "#22C55E",
+        ink: "#060807", // noir profond (léger ton vert)
+        brand: "#39FF14", // vert fluo principal
+        ai: "#00E676", // vert émeraude néon (partenaire de dégradé)
+        neon: "#39FF14",
+        savings: "#39FF14",
         alert: "#F97316",
-        surface: "#F8FAFC",
-        muted: "#64748B",
+        surface: "#0b0f0c",
+        muted: "#94a3b8",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Pacifico", "cursive"],
       },
       boxShadow: {
-        card: "0 10px 40px -12px rgba(15, 23, 42, 0.18)",
-        glow: "0 0 0 1px rgba(37,99,235,0.2), 0 12px 32px -8px rgba(37,99,235,0.45)",
+        card: "0 10px 40px -12px rgba(0, 0, 0, 0.6)",
+        glow: "0 0 0 1px rgba(57,255,20,0.35), 0 0 28px -4px rgba(57,255,20,0.55)",
+        neon: "0 0 24px -2px rgba(57,255,20,0.7)",
       },
       keyframes: {
         gradientMove: {

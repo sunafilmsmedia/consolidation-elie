@@ -42,7 +42,7 @@ export default function ResultView({ leadId }: { leadId: string }) {
           </p>
           <Link
             href="/calculator"
-            className="mt-6 inline-flex h-12 items-center rounded-2xl bg-gradient-to-r from-brand to-ai px-6 font-bold"
+            className="mt-6 inline-flex h-12 items-center rounded-2xl bg-gradient-to-r from-brand to-ai px-6 font-extrabold text-black"
           >
             Recommencer
           </Link>
@@ -60,7 +60,7 @@ export default function ResultView({ leadId }: { leadId: string }) {
   const level = LEVEL_LABELS[result.potentialLevel];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-ink via-[#111a33] to-ink text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
       <div className="mx-auto max-w-3xl px-6 py-14">
         <div className="animate-fadeUp">
           <span className="ai-gradient-text text-sm font-bold uppercase tracking-wide">
@@ -128,7 +128,7 @@ export default function ResultView({ leadId }: { leadId: string }) {
             href={calculatorConfig.calendarLink}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-14 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-6 text-base font-bold text-white shadow-glow transition hover:brightness-110"
+            className="inline-flex h-14 flex-1 items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-6 text-base font-extrabold text-black shadow-glow transition hover:brightness-110"
           >
             Valider mon résultat avec un courtier
           </a>
@@ -154,7 +154,7 @@ function ResultCard({
   accent: "savings" | "ai" | "brand";
 }) {
   const accentClass =
-    accent === "savings" ? "text-savings" : accent === "ai" ? "text-ai" : "text-sky-300";
+    accent === "savings" ? "text-savings" : accent === "ai" ? "text-ai" : "text-white";
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</div>

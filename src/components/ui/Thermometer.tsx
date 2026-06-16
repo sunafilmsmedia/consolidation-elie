@@ -11,11 +11,11 @@ interface ThermometerProps {
 }
 
 const LEVEL_COLORS: Record<PotentialLevel, string> = {
-  low: "#94a3b8",
-  moderate: "#2563EB",
-  good: "#22C55E",
-  strong: "#F97316",
-  very_strong: "#ef4444",
+  low: "#9ca3af",
+  moderate: "#a3e635",
+  good: "#39FF14",
+  strong: "#22ff8c",
+  very_strong: "#00ffa3",
 };
 
 export default function Thermometer({
@@ -25,7 +25,7 @@ export default function Thermometer({
   compact = false,
 }: ThermometerProps) {
   const fill = hasEnoughInfo ? Math.max(score, 6) : 0;
-  const color = level ? LEVEL_COLORS[level] : "#38bdf8";
+  const color = level ? LEVEL_COLORS[level] : "#39FF14";
   const label = hasEnoughInfo && level ? LEVEL_LABELS[level] : "À découvrir";
   const description =
     hasEnoughInfo && level
@@ -34,12 +34,12 @@ export default function Thermometer({
 
   return (
     <div
-      className={`relative rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur ${
+      className={`relative rounded-3xl border border-white/15 bg-white/[0.03] p-6 backdrop-blur ${
         compact ? "" : "shadow-card"
       }`}
     >
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-300">
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-400/20">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neon">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-neon/15">
           ⚡
         </span>
         Ton potentiel actuel

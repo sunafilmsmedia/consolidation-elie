@@ -131,7 +131,7 @@ export default function CalculatorForm() {
 
   if (submitting) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-ink via-[#111a33] to-ink text-white">
+      <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
         <LoadingAI />
       </main>
     );
@@ -183,7 +183,7 @@ export default function CalculatorForm() {
               <button
                 onClick={handleSubmit}
                 disabled={!canContinue}
-                className="h-14 flex-1 rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-bold text-white shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                className="h-14 flex-1 rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-extrabold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Voir mon résultat IA
               </button>
@@ -191,7 +191,7 @@ export default function CalculatorForm() {
               <button
                 onClick={goNext}
                 disabled={!canContinue}
-                className="h-14 flex-1 rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-bold text-white shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                className="h-14 flex-1 rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-extrabold text-black shadow-glow transition enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Continuer
               </button>
