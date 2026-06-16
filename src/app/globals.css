@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --ink: #0f172a;
+}
+
+html,
+body {
+  background: var(--ink);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .ai-gradient-text {
+    background: linear-gradient(90deg, #38bdf8, #a855f7, #ec4899, #f97316);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    @apply animate-gradientMove;
+  }
+}
