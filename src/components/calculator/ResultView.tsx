@@ -79,6 +79,17 @@ export default function ResultView({ leadId }: { leadId: string }) {
           </p>
         </div>
 
+        {/* Prochaine étape — confirmation après soumission */}
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-neon/40 bg-neon/10 p-5">
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neon/20 text-neon">
+            ✓
+          </span>
+          <p className="text-sm leading-relaxed text-white sm:text-base">
+            Tu recevras une réponse précise lors de ton appel avec Elie. Nous allons analyser
+            ton dossier en détail et te rappeler dans les prochaines heures.
+          </p>
+        </div>
+
         {/* Cartes */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <ResultCard
