@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Thermometer from "@/components/ui/Thermometer";
+import BrokerCard from "@/components/ui/BrokerCard";
 
 export default function LandingPage() {
   return (
@@ -44,8 +45,9 @@ export default function LandingPage() {
         </div>
 
         {/* Colonne droite */}
-        <div className="w-full lg:w-[40%]">
+        <div className="flex w-full flex-col gap-4 lg:w-[40%]">
           <Thermometer score={0} level={null} hasEnoughInfo={false} />
+          <BrokerCard />
         </div>
       </div>
     </main>

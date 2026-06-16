@@ -6,6 +6,7 @@ import type { CalculatorResult } from "@/types/calculator";
 import { LEVEL_LABELS } from "@/lib/scoring";
 import { formatCurrency } from "@/lib/format";
 import { calculatorConfig } from "@/lib/config";
+import BrokerCard from "@/components/ui/BrokerCard";
 
 interface StoredResult {
   result: CalculatorResult;
@@ -122,8 +123,13 @@ export default function ResultView({ leadId }: { leadId: string }) {
           valeur de votre propriété, les taux disponibles et les critères des prêteurs.
         </p>
 
+        {/* Carte courtier */}
+        <div className="mt-8">
+          <BrokerCard />
+        </div>
+
         {/* CTA */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <a
             href={calculatorConfig.calendarLink}
             target="_blank"

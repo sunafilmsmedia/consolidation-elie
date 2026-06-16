@@ -31,8 +31,10 @@ export const calculatorConfig = {
   // Économie minimale affichée pour éviter d'afficher des micro-montants.
   minimumDisplayedSavings: 50,
 
-  // Coordonnées du courtier (placeholders).
-  brokerName: "Ton courtier hypothécaire",
+  // Coordonnées du courtier.
+  brokerName: "Elie Ibrahim",
+  brokerTitle: "Courtier hypothécaire",
+  brokerPhone: "819 210 7843",
   calendarLink: "https://calendly.com/ton-courtier/consultation",
 };
 
