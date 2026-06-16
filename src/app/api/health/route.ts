@@ -1,39 +1,40 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 /**
  * Diagnostic — ne renvoie JAMAIS la clé, seulement son état.
- * À retirer une fois l'intégration OpenAI confirmée.
+ * À retirer une fois l'intégration confirmée.
  */
 export async function GET() {
-  const key = process.env.OPENAI_API_KEY;
+  const key = process.env.ANTHROPIC_API_KEY;
+  const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
 
   const status: Record<string, unknown> = {
     hasKey: !!key,
     keyLength: key ? key.length : 0,
-    keyPrefix: key ? key.slice(0, 7) : null,
-    model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
+    keyPrefix: key ? key.slice(0, 10) : null,
+    model,
   };
 
   if (!key) {
-    status.openai = "NO_KEY — la variable OPENAI_API_KEY n'est pas lue par cette fonction";
+    status.anthropic = "NO_KEY — la variable ANTHROPIC_API_KEY n'est pas lue par cette fonction";
     return NextResponse.json(status);
   }
 
   try {
-    const openai = new OpenAI({ apiKey: key });
-    const completion = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
-      max_tokens: 5,
+    const anthropic = new Anthropic({ apiKey: key });
+    const message = await anthropic.messages.create({
+      model,
+      max_tokens: 16,
       messages: [{ role: "user", content: "Réponds juste: OK" }],
     });
-    status.openai = "OK";
-    status.sample = completion.choices[0]?.message?.content ?? null;
+    status.anthropic = "OK";
+    status.sample = message.content.find((b) => b.type === "text")?.text ?? null;
   } catch (e) {
-    const err = e as { status?: number; code?: string; message?: string };
-    status.openai = "ERROR";
+    const err = e as { status?: number; error?: { error?: { type?: string } }; message?: string };
+    status.anthropic = "ERROR";
     status.errorStatus = err.status ?? null;
-    status.errorCode = err.code ?? null;
+    status.errorType = err.error?.error?.type ?? null;
     status.errorMessage = err.message ?? String(e);
   }
 

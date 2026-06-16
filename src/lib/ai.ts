@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import type { CalculatorInput, CalculatorResult } from "@/types/calculator";
 import { LEVEL_LABELS } from "./scoring";
 import {
@@ -12,13 +12,14 @@ import type { RecommendationContent } from "./recommendation";
 /**
  * Génération de la réponse IA personnalisée (côté serveur uniquement).
  *
- * Si OPENAI_API_KEY est défini, on appelle l'API OpenAI. Sinon (ou en cas
- * d'échec), on retombe proprement sur un texte construit localement —
+ * Si ANTHROPIC_API_KEY est défini, on appelle l'API Anthropic (Claude). Sinon
+ * (ou en cas d'échec), on retombe proprement sur un texte construit localement —
  * le formulaire ne casse jamais et l'utilisateur voit toujours un résultat.
  */
 
-// Modèle configurable via env (par défaut un modèle rapide et économique).
-const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
+// Modèle configurable via env. Par défaut Claude Opus 4.8 ; pour réduire les
+// coûts sur cette tâche courte, mettre ANTHROPIC_MODEL=claude-haiku-4-5.
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
 
 export const SYSTEM_PROMPT = `Tu es un assistant spécialisé en vulgarisation hypothécaire pour un courtier hypothécaire au Canada.
 Ton rôle est d'expliquer simplement à l'utilisateur son potentiel d'économie par consolidation de dettes ou refinancement hypothécaire.
@@ -45,7 +46,7 @@ export async function generateAnalysis(
   result: Omit<CalculatorResult, "aiResponse">,
   recommendation: RecommendationContent
 ): Promise<AIResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // Pas de clé : mode local (stub) — texte déterministe.
   if (!apiKey) {
@@ -53,18 +54,21 @@ export async function generateAnalysis(
   }
 
   try {
-    const openai = new OpenAI({ apiKey });
-    const completion = await openai.chat.completions.create({
-      model: OPENAI_MODEL,
+    const anthropic = new Anthropic({ apiKey });
+    const message = await anthropic.messages.create({
+      model: ANTHROPIC_MODEL,
       max_tokens: 600,
-      temperature: 0.6,
+      system: SYSTEM_PROMPT,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: buildUserPrompt(input, result, recommendation) },
       ],
     });
 
-    const text = completion.choices[0]?.message?.content?.trim();
+    const text = message.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
     if (!text) throw new Error("Réponse IA vide");
     return { text, generated: true };
   } catch (e) {
