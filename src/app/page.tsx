@@ -5,7 +5,15 @@ import BrokerCard from "@/components/ui/BrokerCard";
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-6 py-12 lg:flex-row lg:items-center lg:py-24">
+      {/* En-tête avec logo */}
+      <header className="mx-auto flex max-w-[1280px] justify-center px-6 pt-8 lg:justify-start">
+        <span className="inline-flex rounded-xl bg-white px-3 py-2 shadow-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Alliance Hypothécaire" className="h-10 w-auto" />
+        </span>
+      </header>
+
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-6 py-10 lg:flex-row lg:items-center lg:py-16">
         {/* Colonne gauche */}
         <div className="flex-1 animate-fadeUp text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">

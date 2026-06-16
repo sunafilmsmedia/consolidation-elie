@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600;1,700&display=swap");
 
 :root {
   --ink: #060807;
@@ -28,11 +28,12 @@ body {
     @apply animate-gradientMove;
   }
 
-  /* Mot vedette "économiser" — police script + vert fluo + glow néon */
+  /* Mot vedette "économiser" — serif élégant en italique + vert + glow subtil */
   .neon-word {
-    font-family: "Pacifico", cursive;
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-weight: 600;
     color: var(--neon);
-    font-weight: 400;
-    text-shadow: 0 0 8px rgba(47, 224, 106, 0.5), 0 0 22px rgba(47, 224, 106, 0.3);
+    text-shadow: 0 0 10px rgba(47, 224, 106, 0.4), 0 0 24px rgba(47, 224, 106, 0.2);
   }
 }

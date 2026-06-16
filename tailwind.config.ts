@@ -16,7 +16,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        display: ["Pacifico", "cursive"],
+        display: ["Playfair Display", "Georgia", "serif"],
       },
       boxShadow: {
         card: "0 10px 40px -12px rgba(0, 0, 0, 0.6)",
