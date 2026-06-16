@@ -33,13 +33,12 @@ type StepKey =
   | "mortgageMonthlyPayment"
   | "income"
   | "urgency"
-  | "savingsReveal"
   | "contact";
 
 interface Answers extends Partial<CalculatorInput> {
   hasMortgageChoice?: string;
-  dontKnowDebtPayment?: boolean;
   dontKnowMortgagePayment?: boolean;
+  fullName?: string;
 }
 
 // Étapes à choix unique : un clic sélectionne ET avance instantanément.
@@ -77,7 +76,7 @@ export default function CalculatorForm() {
       base.push("hasMortgage", "propertyValue");
       if (hasMortgage) base.push("mortgageBalance", "mortgageMonthlyPayment");
     }
-    base.push("income", "urgency", "savingsReveal", "contact");
+    base.push("income", "urgency", "contact");
     return base;
   }, [isOwner, hasMortgage]);
 
@@ -243,8 +242,6 @@ function validateStep(step: StepKey, a: Answers): boolean {
       return typeof a.totalDebtAmount === "number";
     case "currentDebtMonthlyPayment":
       return typeof a.currentDebtMonthlyPayment === "number" && a.currentDebtMonthlyPayment > 0;
-    case "savingsReveal":
-      return true;
     case "hasMortgage":
       return !!a.hasMortgageChoice;
     case "propertyValue":
@@ -262,7 +259,7 @@ function validateStep(step: StepKey, a: Answers): boolean {
       return !!a.urgencyLevel;
     case "contact":
       return (
-        !!a.firstName?.trim() &&
+        !!a.fullName?.trim() &&
         !!a.email?.trim() &&
         /.+@.+\..+/.test(a.email ?? "") &&
         !!a.phone?.trim() &&
@@ -279,9 +276,14 @@ function buildPayload(a: Answers, honeypot: string): CalculatorInput & { company
   const ownsProperty = a.userStatus === "owner";
   const propertyPaid = a.hasMortgageChoice === "no";
 
+  // "Nom complet" → prénom (premier mot) + nom (le reste), pour le CRM et l'IA.
+  const nameParts = (a.fullName ?? "").trim().split(/\s+/).filter(Boolean);
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ") || undefined;
+
   return {
-    firstName: a.firstName?.trim() ?? "",
-    lastName: a.lastName?.trim() || undefined,
+    firstName,
+    lastName,
     email: a.email?.trim() ?? "",
     phone: a.phone?.trim() ?? "",
     userStatus: a.userStatus!,
@@ -429,8 +431,6 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
           onSelect={(v) => pick({ urgencyLevel: v })}
         />
       );
-    case "savingsReveal":
-      return <SavingsReveal answers={answers} />;
     case "contact":
       return <ContactStep answers={answers} update={update} />;
     default:
@@ -636,63 +636,6 @@ function NumberWithUnknown({
   );
 }
 
-function SavingsReveal({ answers }: { answers: Answers }) {
-  const preview = computeLivePreview(answers);
-  const savings = preview.monthlySavings;
-  const hasSavings = savings >= 50;
-
-  // Fourchette autour de l'estimation (± ~15 %), arrondie à la dizaine.
-  const roundTo10 = (n: number) => Math.max(Math.round(n / 10) * 10, 0);
-  const low = roundTo10(savings * 0.85);
-  const high = roundTo10(savings * 1.15);
-
-  return (
-    <div className="text-center sm:text-left">
-      <span className="ai-gradient-text text-sm font-bold uppercase tracking-wide">
-        Ton estimation est prête
-      </span>
-
-      {hasSavings ? (
-        <>
-          <h2 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">
-            Tu pourrais potentiellement économiser
-          </h2>
-          <p className="mt-4 text-4xl font-extrabold text-neon sm:text-5xl">
-            {formatCurrency(low)} – {formatCurrency(high)}
-            <span className="ml-1 text-lg font-semibold text-white/70">/ mois</span>
-          </p>
-          <p className="mt-4 max-w-xl text-base text-white/70">
-            Selon les informations fournies, voici la fourchette d&apos;économie mensuelle
-            que tu pourrais réaliser en consolidant tes dettes. C&apos;est une estimation
-            qui reste à valider.
-          </p>
-        </>
-      ) : (
-        <>
-          <h2 className="mt-3 text-2xl font-extrabold leading-tight sm:text-3xl">
-            Ta situation mérite une analyse plus poussée
-          </h2>
-          <p className="mt-4 max-w-xl text-base text-white/70">
-            Une consolidation ne semble pas réduire tes paiements selon les informations
-            fournies, mais elle pourrait quand même simplifier ta situation ou réduire le
-            coût total de tes dettes. Une analyse complète permettrait d&apos;y voir clair.
-          </p>
-        </>
-      )}
-
-      <div className="mt-6 rounded-2xl border border-neon/30 bg-neon/5 p-5">
-        <p className="text-base font-semibold text-white">
-          Veux-tu recevoir ton analyse de dossier personnalisée?
-        </p>
-        <p className="mt-1 text-sm text-white/60">
-          Entre tes coordonnées à l&apos;étape suivante pour recevoir ton analyse complète,
-          gratuitement et sans engagement.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function ContactStep({
   answers,
   update,
@@ -700,22 +643,47 @@ function ContactStep({
   answers: Answers;
   update: (patch: Answers) => void;
 }) {
+  const preview = computeLivePreview(answers);
+  const savings = preview.monthlySavings;
+  const hasSavings = savings >= 50;
+  const roundTo10 = (n: number) => Math.max(Math.round(n / 10) * 10, 0);
+  const low = roundTo10(savings * 0.85);
+  const high = roundTo10(savings * 1.15);
+
   return (
     <div>
-      <StepTitle
-        title="Où veux-tu recevoir ton analyse personnalisée?"
-        subtitle="Aucun impact sur ton dossier de crédit ne sera effectué à cette étape."
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* Estimation compacte */}
+      <div className="rounded-2xl border border-neon/30 bg-neon/5 p-4 text-center">
+        <span className="ai-gradient-text text-[11px] font-bold uppercase tracking-wide">
+          Ton estimation
+        </span>
+        {hasSavings ? (
+          <>
+            <p className="mt-1 text-sm text-white/70">Tu pourrais potentiellement économiser</p>
+            <p className="mt-0.5 text-2xl font-extrabold text-neon sm:text-3xl">
+              {formatCurrency(low)} – {formatCurrency(high)}
+              <span className="ml-1 text-sm font-semibold text-white/60">/ mois</span>
+            </p>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-white/70">
+            Ta situation mérite une analyse plus poussée — une consolidation pourrait
+            simplifier tes paiements.
+          </p>
+        )}
+      </div>
+
+      {/* Formulaire compact */}
+      <h2 className="mt-4 text-lg font-extrabold leading-tight">Reçois ton analyse complète</h2>
+      <p className="mt-0.5 text-xs text-white/50">
+        Gratuit, sans engagement. Aucun impact sur ton crédit.
+      </p>
+
+      <div className="mt-3 space-y-2.5">
         <Field
-          label="Prénom"
-          value={answers.firstName ?? ""}
-          onChange={(v) => update({ firstName: v })}
-        />
-        <Field
-          label="Nom"
-          value={answers.lastName ?? ""}
-          onChange={(v) => update({ lastName: v })}
+          label="Nom complet"
+          value={answers.fullName ?? ""}
+          onChange={(v) => update({ fullName: v })}
         />
         <Field
           label="Courriel"
@@ -724,19 +692,19 @@ function ContactStep({
           onChange={(v) => update({ email: v })}
         />
         <Field
-          label="Téléphone"
+          label="Numéro de téléphone"
           type="tel"
           value={answers.phone ?? ""}
           onChange={(v) => update({ phone: v })}
         />
       </div>
 
-      <label className="mt-6 flex cursor-pointer items-start gap-3 text-sm text-slate-300">
+      <label className="mt-3 flex cursor-pointer items-start gap-2 text-xs text-slate-300">
         <input
           type="checkbox"
           checked={answers.consentContact === true}
           onChange={(e) => update({ consentContact: e.target.checked })}
-          className="mt-0.5 h-5 w-5 rounded border-white/30 accent-ai"
+          className="mt-0.5 h-4 w-4 rounded border-white/30 accent-ai"
         />
         J&apos;accepte d&apos;être contacté au sujet de mon analyse et de mes options de
         consolidation.
@@ -758,14 +726,14 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-white/15 bg-white/5 px-4 py-3.5 text-white placeholder:text-slate-500 focus:border-ai focus:outline-none"
+        className="w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-ai focus:outline-none"
       />
     </label>
   );
