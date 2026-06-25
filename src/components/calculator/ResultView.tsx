@@ -61,7 +61,7 @@ export default function ResultView({ leadId }: { leadId: string }) {
   const level = LEVEL_LABELS[result.potentialLevel];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
       <div className="mx-auto max-w-3xl px-6 py-14">
         <div className="animate-fadeUp">
           <span className="ai-gradient-text text-sm font-bold uppercase tracking-wide">

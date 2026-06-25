@@ -144,14 +144,14 @@ export default function CalculatorForm() {
 
   if (submitting) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
+      <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
         <LoadingAI />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-10 lg:grid-cols-[1fr_360px] lg:py-16">
         <div>
           <ProgressBar current={clampedIndex + 1} total={steps.length} />

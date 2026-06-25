@@ -4,7 +4,7 @@ import BrokerCard from "@/components/ui/BrokerCard";
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-[#0a120c] to-black text-white">
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
       {/* En-tête avec logo */}
       <header className="mx-auto flex max-w-[1280px] justify-center px-6 pt-8 lg:justify-start">
         <span className="inline-flex rounded-xl bg-white px-3 py-2 shadow-card">

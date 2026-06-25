@@ -5,11 +5,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#060807", // noir profond (léger ton vert)
-        brand: "#2FE06A", // vert vif principal (moins fluo)
-        ai: "#13C97A", // vert émeraude (partenaire de dégradé)
-        neon: "#2FE06A",
-        savings: "#2FE06A",
+        ink: "#04110E", // noir profond teinté teal
+        brand: "#00897B", // teal Alliance Hypothécaire (principal)
+        ai: "#00B29C", // teal plus clair (partenaire de dégradé)
+        neon: "#00C9A7", // teal lumineux (accents sur fond foncé)
+        savings: "#00C9A7",
         alert: "#F97316",
         surface: "#0b0f0c",
         muted: "#94a3b8",
@@ -20,8 +20,8 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 10px 40px -12px rgba(0, 0, 0, 0.6)",
-        glow: "0 0 0 1px rgba(47,224,106,0.35), 0 0 28px -4px rgba(47,224,106,0.5)",
-        neon: "0 0 24px -2px rgba(47,224,106,0.65)",
+        glow: "0 0 0 1px rgba(0,201,167,0.35), 0 0 28px -4px rgba(0,201,167,0.5)",
+        neon: "0 0 24px -2px rgba(0,201,167,0.6)",
       },
       keyframes: {
         gradientMove: {
