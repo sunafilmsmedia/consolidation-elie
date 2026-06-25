@@ -660,9 +660,12 @@ function ContactStep({
       </div>
 
       {/* Formulaire compact */}
-      <h2 className="mt-4 text-lg font-extrabold leading-tight">Reçois ton analyse complète</h2>
+      <h2 className="mt-4 text-lg font-extrabold leading-tight">
+        Vérifie si c&apos;est possible pour toi
+      </h2>
       <p className="mt-0.5 text-xs text-white/50">
-        Gratuit, sans engagement. Aucun impact sur ton crédit.
+        Laisse tes coordonnées : Elie analyse ton dossier et te confirme tes vraies options.
+        Gratuit, sans engagement.
       </p>
 
       <div className="mt-3 space-y-2.5">
