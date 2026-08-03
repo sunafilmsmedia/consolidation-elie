@@ -15,7 +15,7 @@ export default function LoadingAI() {
   useEffect(() => {
     const id = setInterval(() => {
       setIndex((i) => (i < STEPS.length - 1 ? i + 1 : i));
-    }, 850);
+    }, 400);
     return () => clearInterval(id);
   }, []);
 

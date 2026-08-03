@@ -86,6 +86,13 @@ export default function CalculatorForm() {
 
   const preview = useMemo(() => computeLivePreview(answers), [answers]);
 
+  // Fourchette d'économie estimée, calculée en direct (teaser mobile).
+  const roundTo10 = (n: number) => Math.max(Math.round(n / 10) * 10, 0);
+  const previewLow = roundTo10(preview.monthlySavings * 0.85);
+  const previewHigh = roundTo10(preview.monthlySavings * 1.15);
+  const showMobilePreview =
+    preview.hasEnoughInfo && preview.monthlySavings > 0 && currentStep !== "contact";
+
   function update(patch: Answers) {
     setAnswers((prev) => ({ ...prev, ...patch }));
     setError(null);
@@ -131,7 +138,7 @@ export default function CalculatorForm() {
 
       // Délai minimum pour l'écran de chargement IA (perception de valeur).
       const elapsed = Date.now() - startedAt;
-      const wait = Math.max(2500 - elapsed, 0);
+      const wait = Math.max(1000 - elapsed, 0);
       sessionStorage.setItem(
         `result:${data.leadId}`,
         JSON.stringify({ result: data.result, firstName: payload.firstName })
@@ -199,6 +206,21 @@ export default function CalculatorForm() {
     <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-6 py-10 lg:grid-cols-[1fr_360px] lg:py-16">
         <div>
+          {/* Estimation en direct — visible en haut sur mobile seulement */}
+          {showMobilePreview && (
+            <div className="sticky top-3 z-20 mb-5 lg:hidden">
+              <div className="rounded-2xl border border-neon/30 bg-[#04130f]/90 px-4 py-3 text-center shadow-glow backdrop-blur">
+                <span className="ai-gradient-text text-[10px] font-bold uppercase tracking-wide">
+                  Estimation en direct
+                </span>
+                <p className="mt-0.5 text-xl font-extrabold text-neon">
+                  {formatCurrency(previewLow)} – {formatCurrency(previewHigh)}
+                  <span className="ml-1 text-xs font-semibold text-white/60">/ mois</span>
+                </p>
+              </div>
+            </div>
+          )}
+
           <ProgressBar current={clampedIndex + 1} total={steps.length} />
 
           <div key={currentStep} className="mt-8 animate-fadeUp">
