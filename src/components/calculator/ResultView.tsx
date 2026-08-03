@@ -7,6 +7,7 @@ import { LEVEL_LABELS } from "@/lib/scoring";
 import { formatCurrency } from "@/lib/format";
 import { calculatorConfig } from "@/lib/config";
 import { classifySavings } from "@/lib/savingsTier";
+import { trackPixel } from "@/lib/pixel";
 import BrokerCard from "@/components/ui/BrokerCard";
 
 interface StoredResult {
@@ -26,7 +27,16 @@ export default function ResultView({ leadId }: { leadId: string }) {
 
   useEffect(() => {
     const raw = sessionStorage.getItem(`result:${leadId}`);
-    if (raw) setData(JSON.parse(raw) as StoredResult);
+    if (raw) {
+      setData(JSON.parse(raw) as StoredResult);
+      // La personne a complété le formulaire → événement Prospect (Lead).
+      // Garde anti-doublon : une seule fois par lead, même si la page est rafraîchie.
+      const firedKey = `lead-fired:${leadId}`;
+      if (!sessionStorage.getItem(firedKey)) {
+        trackPixel("Lead");
+        sessionStorage.setItem(firedKey, "1");
+      }
+    }
     setLoaded(true);
   }, [leadId]);
 

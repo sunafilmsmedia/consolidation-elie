@@ -8,7 +8,6 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingAI from "./LoadingAI";
 import { computeLivePreview } from "@/lib/livePreview";
 import { formatCurrency } from "@/lib/format";
-import { trackPixel } from "@/lib/pixel";
 import Link from "next/link";
 import {
   DEBT_AMOUNT_OPTIONS,
@@ -136,9 +135,6 @@ export default function CalculatorForm() {
         setSubmitting(false);
         return;
       }
-
-      // La personne a rempli et soumis ses données → événement Prospect (Lead).
-      trackPixel("Lead");
 
       // Délai minimum pour l'écran de chargement IA (perception de valeur).
       const elapsed = Date.now() - startedAt;
