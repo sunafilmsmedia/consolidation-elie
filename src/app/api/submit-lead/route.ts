@@ -39,13 +39,9 @@ export async function POST(request: Request) {
     // dossier dont l'économie estimée est trop faible (< 300 $/mois) n'est PAS
     // poussé au CRM : ce n'est pas un lead qualifié pour le courtier.
     const tier = classifySavings(result.estimatedMonthlySavings);
-    let crmConfigured = false;
-    let crmOk: boolean | null = null;
     if (tier.isWorthwhile) {
       const crmPayload = buildCrmPayload(input as CalculatorInput, result);
       const crm = await sendToCrm(crmPayload);
-      crmConfigured = crm.configured;
-      crmOk = crm.ok;
       if (!crm.ok) {
         console.error(crm.error);
       }
@@ -62,13 +58,6 @@ export async function POST(request: Request) {
       leadId,
       resultUrl: `/results/${leadId}`,
       result,
-      // TEMP diagnostic (à retirer) — pour vérifier le branchement CRM.
-      _diag: {
-        monthlySavings: result.estimatedMonthlySavings,
-        worthwhile: tier.isWorthwhile,
-        crmConfigured,
-        crmOk,
-      },
     });
   } catch (e) {
     console.error("LEAD_PROCESSING_FAILED", e);
