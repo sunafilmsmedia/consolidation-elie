@@ -1,11 +1,11 @@
-export type UserStatus = "owner" | "renter" | "buying_process" | "unsure";
+// L'outil est réservé aux propriétaires : la consolidation via un courtier
+// hypothécaire s'appuie sur l'équité de la propriété. Les non-propriétaires
+// sont filtrés en amont (écran d'arrêt) et n'atteignent jamais le calcul.
+export type UserStatus = "owner";
 
 export type PrimaryGoal =
   | "reduce_monthly_payments"
   | "combine_debts"
-  | "pay_less_interest"
-  | "free_cashflow"
-  | "prepare_home_purchase"
   | "explore_options";
 
 export type DebtType =
@@ -24,10 +24,7 @@ export type PotentialLevel = "low" | "moderate" | "good" | "strong" | "very_stro
 export type RecommendationType =
   | "refinance_full"
   | "refinance_partial"
-  | "not_enough_equity"
-  | "non_mortgage_consolidation"
-  | "buying_process"
-  | "general_review";
+  | "not_enough_equity";
 
 export interface CalculatorInput {
   firstName: string;
@@ -49,7 +46,6 @@ export interface CalculatorInput {
   mortgageMonthlyPayment?: number;
 
   householdIncomeRange?: string;
-  urgencyLevel: string;
   consentContact: boolean;
 }
 
@@ -65,6 +61,7 @@ export interface CalculatorResult {
   availableEquity?: number;
   maxRefinanceAmount?: number;
   potentialCashAvailable?: number;
+  consolidatableAmount?: number;
   loanToValueRatio?: number;
 
   savingsScore: number;

@@ -1,7 +1,6 @@
 import type {
   DebtType,
   PrimaryGoal,
-  UserStatus,
 } from "@/types/calculator";
 
 export interface ChoiceOption<T = string> {
@@ -9,19 +8,18 @@ export interface ChoiceOption<T = string> {
   value: T;
 }
 
-export const USER_STATUS_OPTIONS: ChoiceOption<UserStatus>[] = [
-  { label: "Je suis propriétaire", value: "owner" },
-  { label: "Je suis locataire", value: "renter" },
-  { label: "Je suis en processus d'achat", value: "buying_process" },
-  { label: "Je ne suis pas certain", value: "unsure" },
+// Filtre d'entrée : seule une personne propriétaire peut consolider ses dettes
+// via l'équité de sa propriété avec un courtier hypothécaire.
+export type OwnershipChoice = "owner" | "not_owner";
+
+export const OWNERSHIP_OPTIONS: ChoiceOption<OwnershipChoice>[] = [
+  { label: "Oui, je suis propriétaire", value: "owner" },
+  { label: "Non, je ne suis pas propriétaire", value: "not_owner" },
 ];
 
 export const PRIMARY_GOAL_OPTIONS: ChoiceOption<PrimaryGoal>[] = [
   { label: "Réduire mes paiements mensuels", value: "reduce_monthly_payments" },
   { label: "Regrouper plusieurs dettes en un seul paiement", value: "combine_debts" },
-  { label: "Payer moins d'intérêts", value: "pay_less_interest" },
-  { label: "Libérer de l'argent chaque mois", value: "free_cashflow" },
-  { label: "Améliorer ma situation avant un achat immobilier", value: "prepare_home_purchase" },
   { label: "Je veux juste voir mes options", value: "explore_options" },
 ];
 
@@ -52,14 +50,6 @@ export const PROPERTY_VALUE_OPTIONS: ChoiceOption<number>[] = [
   { label: "1 000 000 $ et plus", value: 1100000 },
 ];
 
-export const MORTGAGE_BALANCE_OPTIONS: ChoiceOption<number>[] = [
-  { label: "Moins de 100 000 $", value: 75000 },
-  { label: "100 000 $ à 250 000 $", value: 175000 },
-  { label: "250 000 $ à 400 000 $", value: 325000 },
-  { label: "400 000 $ à 600 000 $", value: 500000 },
-  { label: "600 000 $ et plus", value: 700000 },
-];
-
 export const HAS_MORTGAGE_OPTIONS: ChoiceOption<string>[] = [
   { label: "Oui", value: "yes" },
   { label: "Non, ma propriété est payée", value: "no" },
@@ -76,9 +66,3 @@ export const INCOME_OPTIONS: ChoiceOption<string>[] = [
   { label: "Je préfère ne pas répondre", value: "no_answer" },
 ];
 
-export const URGENCY_OPTIONS: ChoiceOption<string>[] = [
-  { label: "Le plus vite possible", value: "asap" },
-  { label: "Dans les prochaines semaines", value: "weeks" },
-  { label: "Dans les prochains mois", value: "months" },
-  { label: "Je suis seulement curieux", value: "curious" },
-];

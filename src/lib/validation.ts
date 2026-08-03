@@ -12,13 +12,10 @@ export const calculatorInputSchema = z
       .trim()
       .regex(phoneRegex, "Numéro de téléphone invalide"),
 
-    userStatus: z.enum(["owner", "renter", "buying_process", "unsure"]),
+    userStatus: z.literal("owner"),
     primaryGoal: z.enum([
       "reduce_monthly_payments",
       "combine_debts",
-      "pay_less_interest",
-      "free_cashflow",
-      "prepare_home_purchase",
       "explore_options",
     ]),
     debtTypes: z
@@ -47,13 +44,12 @@ export const calculatorInputSchema = z
     mortgageMonthlyPayment: z.number().nonnegative().optional(),
 
     householdIncomeRange: z.string().optional(),
-    urgencyLevel: z.string().min(1),
     consentContact: z.literal(true, {
       errorMap: () => ({ message: "Le consentement est requis" }),
     }),
   })
-  .refine((d) => !d.ownsProperty || d.propertyValue !== undefined, {
-    message: "La valeur de la propriété est requise pour les propriétaires",
+  .refine((d) => d.propertyValue !== undefined, {
+    message: "La valeur de la propriété est requise",
     path: ["propertyValue"],
   });
 

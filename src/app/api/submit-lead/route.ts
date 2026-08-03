@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { calculatorInputSchema } from "@/lib/validation";
 import { processLead } from "@/lib/engine";
 import { buildCrmPayload, sendToCrm } from "@/lib/crm";
+import { classifySavings } from "@/lib/savingsTier";
 import type { CalculatorInput } from "@/types/calculator";
 
 export async function POST(request: Request) {
@@ -34,11 +35,20 @@ export async function POST(request: Request) {
   try {
     const { result } = await processLead(input);
 
-    // Construction + envoi CRM (stub). Un échec ne bloque pas l'utilisateur.
-    const crmPayload = buildCrmPayload(input as CalculatorInput, result);
-    const crm = await sendToCrm(crmPayload);
-    if (!crm.ok) {
-      console.error(crm.error);
+    // On donne toujours le résultat (valeur) à la personne. Par contre, un
+    // dossier dont l'économie estimée est trop faible (< 300 $/mois) n'est PAS
+    // poussé au CRM : ce n'est pas un lead qualifié pour le courtier.
+    const tier = classifySavings(result.estimatedMonthlySavings);
+    if (tier.isWorthwhile) {
+      const crmPayload = buildCrmPayload(input as CalculatorInput, result);
+      const crm = await sendToCrm(crmPayload);
+      if (!crm.ok) {
+        console.error(crm.error);
+      }
+    } else {
+      console.log(
+        `[LEAD IGNORÉ] Économie estimée ${result.estimatedMonthlySavings} $/mois < 300 $ — non envoyé au CRM.`
+      );
     }
 
     // TODO: persister dans Supabase (table `leads`) une fois branché.

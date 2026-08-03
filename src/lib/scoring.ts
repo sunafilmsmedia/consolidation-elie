@@ -1,15 +1,7 @@
 import type { CalculatorInput, DebtType, PotentialLevel } from "@/types/calculator";
 
-function statusPoints(input: CalculatorInput): number {
-  switch (input.userStatus) {
-    case "owner":
-      return 20;
-    case "buying_process":
-      return 5;
-    default:
-      return 0;
-  }
-}
+// L'outil est réservé aux propriétaires : le statut vaut toujours le plein score.
+const OWNER_STATUS_POINTS = 20;
 
 function debtAmountPoints(amount: number): number {
   if (amount >= 100000) return 40;
@@ -51,19 +43,6 @@ function equityPoints(availableEquity?: number): number {
   return 0;
 }
 
-function urgencyPoints(urgency: string): number {
-  switch (urgency) {
-    case "asap":
-      return 20;
-    case "weeks":
-      return 15;
-    case "months":
-      return 5;
-    default:
-      return 0;
-  }
-}
-
 export interface ScoreParams {
   estimatedCurrentDebtPayment: number;
   availableEquity?: number;
@@ -72,12 +51,11 @@ export interface ScoreParams {
 /** Score de potentiel de 0 à 100. */
 export function calculateSavingsScore(input: CalculatorInput, params: ScoreParams): number {
   const total =
-    statusPoints(input) +
+    OWNER_STATUS_POINTS +
     debtAmountPoints(input.totalDebtAmount) +
     monthlyPaymentPoints(params.estimatedCurrentDebtPayment) +
     debtTypePoints(input.debtTypes) +
-    equityPoints(params.availableEquity) +
-    urgencyPoints(input.urgencyLevel);
+    equityPoints(params.availableEquity);
 
   return Math.min(total, 100);
 }

@@ -66,6 +66,7 @@ export interface CoreCalculations {
   availableEquity?: number;
   maxRefinanceAmount?: number;
   potentialCashAvailable?: number;
+  consolidatableAmount?: number;
   loanToValueRatio?: number;
   refinanceCoverage: "full" | "partial" | "none";
 }
@@ -89,24 +90,18 @@ export function runCalculations(input: CalculatorInput): CoreCalculations {
     totalDebtAmount,
     currentDebtMonthlyPayment
   );
-
   const estimatedConsolidatedRate = calculatorConfig.estimatedMortgageRate;
-  const estimatedConsolidatedPayment = calculateMonthlyPayment(
-    totalDebtAmount,
-    estimatedConsolidatedRate,
-    calculatorConfig.amortizationYears
-  );
 
-  // Ne jamais afficher une économie négative.
-  const rawSavings = estimatedCurrentDebtPayment - estimatedConsolidatedPayment;
-  const estimatedMonthlySavings = Math.max(Math.round(rawSavings), 0);
-  const estimatedAnnualSavings = estimatedMonthlySavings * 12;
-
+  // Équité et montant potentiellement disponible au refinancement.
+  // Formule : (valeur × 80 %) − solde hypothécaire.
   let availableEquity: number | undefined;
   let maxRefinanceAmount: number | undefined;
   let potentialCashAvailable: number | undefined;
   let loanToValueRatio: number | undefined;
   let refinanceCoverage: "full" | "partial" | "none" = "none";
+
+  // On ne peut consolider que ce que l'équité permet réellement de dégager.
+  let consolidatableAmount = 0;
 
   if (ownsProperty && propertyValue) {
     const balance = mortgageBalance ?? 0;
@@ -115,12 +110,31 @@ export function runCalculations(input: CalculatorInput): CoreCalculations {
     potentialCashAvailable = calculatePotentialCashAvailable(propertyValue, balance);
     loanToValueRatio = propertyValue > 0 ? balance / propertyValue : 0;
 
+    consolidatableAmount = Math.max(Math.min(totalDebtAmount, potentialCashAvailable), 0);
+
     if (potentialCashAvailable >= totalDebtAmount && totalDebtAmount > 0) {
       refinanceCoverage = "full";
     } else if (potentialCashAvailable > 0) {
       refinanceCoverage = "partial";
     }
   }
+
+  // Paiement mensuel additionnel pour rouler la portion consolidable dans
+  // l'hypothèque (au taux hypothécaire, amorti sur la période standard).
+  const estimatedConsolidatedPayment = calculateMonthlyPayment(
+    consolidatableAmount,
+    estimatedConsolidatedRate,
+    calculatorConfig.amortizationYears
+  );
+
+  // Économie = part du paiement de dettes couverte par la consolidation,
+  // moins le paiement hypothécaire additionnel. Jamais négative.
+  const portionFactor =
+    totalDebtAmount > 0 ? consolidatableAmount / totalDebtAmount : 0;
+  const currentPaymentOnConsolidated = estimatedCurrentDebtPayment * portionFactor;
+  const rawSavings = currentPaymentOnConsolidated - estimatedConsolidatedPayment;
+  const estimatedMonthlySavings = Math.max(Math.round(rawSavings), 0);
+  const estimatedAnnualSavings = estimatedMonthlySavings * 12;
 
   return {
     estimatedAverageDebtRate,
@@ -133,6 +147,7 @@ export function runCalculations(input: CalculatorInput): CoreCalculations {
     maxRefinanceAmount: maxRefinanceAmount ? Math.round(maxRefinanceAmount) : undefined,
     potentialCashAvailable:
       potentialCashAvailable !== undefined ? Math.round(potentialCashAvailable) : undefined,
+    consolidatableAmount: ownsProperty ? Math.round(consolidatableAmount) : undefined,
     loanToValueRatio,
     refinanceCoverage,
   };

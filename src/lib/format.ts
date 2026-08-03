@@ -19,17 +19,11 @@ export function formatPercent(rate: number): string {
 
 export const USER_STATUS_LABELS: Record<UserStatus, string> = {
   owner: "Propriétaire",
-  renter: "Locataire",
-  buying_process: "En processus d'achat",
-  unsure: "Incertain",
 };
 
 export const PRIMARY_GOAL_LABELS: Record<PrimaryGoal, string> = {
   reduce_monthly_payments: "Réduire mes paiements mensuels",
   combine_debts: "Regrouper plusieurs dettes",
-  pay_less_interest: "Payer moins d'intérêts",
-  free_cashflow: "Libérer de l'argent chaque mois",
-  prepare_home_purchase: "Améliorer ma situation avant un achat",
   explore_options: "Voir mes options",
 };
 
@@ -43,13 +37,6 @@ export const DEBT_TYPE_LABELS: Record<DebtType, string> = {
   tax_debt: "Dettes fiscales",
   other: "Autre",
   none: "Aucune dette importante",
-};
-
-export const URGENCY_LABELS: Record<string, string> = {
-  asap: "Le plus vite possible",
-  weeks: "Dans les prochaines semaines",
-  months: "Dans les prochains mois",
-  curious: "Seulement curieux",
 };
 
 export const INCOME_LABELS: Record<string, string> = {

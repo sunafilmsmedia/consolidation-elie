@@ -17,7 +17,6 @@ export interface LivePreview {
  */
 export function computeLivePreview(answers: Partial<CalculatorInput>): LivePreview {
   const hasEnoughInfo =
-    answers.userStatus !== undefined &&
     answers.debtTypes !== undefined &&
     answers.debtTypes.length > 0 &&
     typeof answers.totalDebtAmount === "number";
@@ -30,18 +29,17 @@ export function computeLivePreview(answers: Partial<CalculatorInput>): LivePrevi
     firstName: answers.firstName ?? "",
     email: answers.email ?? "",
     phone: answers.phone ?? "",
-    userStatus: answers.userStatus!,
+    userStatus: "owner",
     primaryGoal: answers.primaryGoal ?? "explore_options",
     debtTypes: answers.debtTypes!,
     totalDebtAmount: answers.totalDebtAmount ?? 0,
     currentDebtMonthlyPayment: answers.currentDebtMonthlyPayment,
-    ownsProperty: answers.ownsProperty ?? false,
+    ownsProperty: true,
     hasMortgage: answers.hasMortgage,
     propertyValue: answers.propertyValue,
     mortgageBalance: answers.mortgageBalance,
     mortgageMonthlyPayment: answers.mortgageMonthlyPayment,
     householdIncomeRange: answers.householdIncomeRange,
-    urgencyLevel: answers.urgencyLevel ?? "",
     consentContact: true,
   };
 

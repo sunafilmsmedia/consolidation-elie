@@ -3,9 +3,9 @@ import { LEVEL_LABELS } from "./scoring";
 import {
   DEBT_TYPE_LABELS,
   PRIMARY_GOAL_LABELS,
-  URGENCY_LABELS,
   USER_STATUS_LABELS,
 } from "./format";
+import { classifySavings } from "./savingsTier";
 
 /**
  * Payload CRM (format GoHighLevel) construit à partir du lead.
@@ -35,16 +35,16 @@ export function buildCrmPayload(
   input: CalculatorInput,
   result: CalculatorResult
 ): CrmPayload {
+  const tier = classifySavings(result.estimatedMonthlySavings);
   const tags = [
     "Lead - Calculateur consolidation",
     levelTag(result.potentialLevel),
-    input.ownsProperty ? "Propriétaire" : "Locataire",
+    `Économie - ${tier.label}`,
+    "Propriétaire",
   ];
 
   if (result.recommendationType === "refinance_full") tags.push("Refinancement possible");
   if (result.recommendationType === "refinance_partial") tags.push("Consolidation partielle");
-  if (input.urgencyLevel === "asap") tags.push("Urgent");
-  if (input.urgencyLevel === "curious") tags.push("Curieux");
 
   return {
     firstName: input.firstName,
@@ -65,7 +65,6 @@ export function buildCrmPayload(
       potentialCashAvailable: result.potentialCashAvailable ?? 0,
       savingsScore: result.savingsScore,
       potentialLevel: LEVEL_LABELS[result.potentialLevel],
-      urgencyLevel: URGENCY_LABELS[input.urgencyLevel] ?? input.urgencyLevel,
       aiResponse: result.aiResponse,
     },
   };

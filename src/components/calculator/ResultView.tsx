@@ -6,6 +6,7 @@ import type { CalculatorResult } from "@/types/calculator";
 import { LEVEL_LABELS } from "@/lib/scoring";
 import { formatCurrency } from "@/lib/format";
 import { calculatorConfig } from "@/lib/config";
+import { classifySavings } from "@/lib/savingsTier";
 import BrokerCard from "@/components/ui/BrokerCard";
 
 interface StoredResult {
@@ -17,9 +18,6 @@ const STRATEGY_LABELS: Record<CalculatorResult["recommendationType"], string> = 
   refinance_full: "Consolidation par refinancement",
   refinance_partial: "Consolidation partielle",
   not_enough_equity: "Analyse personnalisée requise",
-  non_mortgage_consolidation: "Consolidation non hypothécaire",
-  buying_process: "Préparation avant achat",
-  general_review: "Analyse générale",
 };
 
 export default function ResultView({ leadId }: { leadId: string }) {
@@ -57,7 +55,8 @@ export default function ResultView({ leadId }: { leadId: string }) {
   }
 
   const { result, firstName } = data;
-  const hasSavings = result.estimatedMonthlySavings >= calculatorConfig.minimumDisplayedSavings;
+  const tier = classifySavings(result.estimatedMonthlySavings);
+  const showFigures = result.estimatedMonthlySavings > 0;
   const level = LEVEL_LABELS[result.potentialLevel];
 
   return (
@@ -68,38 +67,66 @@ export default function ResultView({ leadId }: { leadId: string }) {
             Ton analyse IA
           </span>
           <h1 className="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">
-            {firstName}, ton potentiel d&apos;économie : {level.toLowerCase()}.
+            {firstName} — {tier.headline}.
           </h1>
           <p className="mt-4 text-lg text-slate-300">
-            {hasSavings
+            {showFigures
               ? `Selon les informations fournies, tu pourrais potentiellement économiser environ ${formatCurrency(
                   result.estimatedMonthlySavings
-                )} par mois en consolidant tes dettes.`
-              : "Une consolidation ne semble pas réduire tes paiements selon les informations fournies, mais elle pourrait quand même simplifier ta situation ou réduire le coût total selon les conditions."}
+                )} par mois en regroupant tes dettes dans ton hypothèque.`
+              : "Selon les informations fournies, la consolidation ne semble pas réduire tes paiements pour l'instant."}
           </p>
         </div>
 
-        {/* Prochaine étape — confirmation après soumission */}
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-neon/40 bg-neon/10 p-5">
-          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neon/20 text-neon">
-            ✓
-          </span>
-          <p className="text-sm leading-relaxed text-white sm:text-base">
-            Tu recevras une réponse précise lors de ton appel avec Elie. Nous allons analyser
-            ton dossier en détail et te rappeler dans les prochaines heures.
-          </p>
-        </div>
+        {/* Prochaine étape — confirmation seulement pour un dossier qui vaut la peine */}
+        {tier.isWorthwhile ? (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-neon/40 bg-neon/10 p-5">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neon/20 text-neon">
+              ✓
+            </span>
+            <p className="text-sm leading-relaxed text-white sm:text-base">
+              Tu recevras une réponse précise lors de ton appel avec {calculatorConfig.brokerName}.
+              Nous allons analyser ton dossier en détail et te rappeler dans les prochaines heures.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-white/15 bg-white/5 p-5">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-slate-200">
+              i
+            </span>
+            <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
+              {tier.message}
+            </p>
+          </div>
+        )}
+
+        {/* Montant disponible via l'équité — cœur de la logique de consolidation */}
+        {result.potentialCashAvailable !== undefined && result.potentialCashAvailable > 0 && (
+          <div className="mt-6 rounded-2xl border border-ai/30 bg-ai/5 p-5">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Montant potentiellement disponible via ton équité
+            </div>
+            <div className="mt-1 text-3xl font-extrabold text-ai">
+              {formatCurrency(result.potentialCashAvailable)}
+            </div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Estimé à partir de 80 % de la valeur de ta propriété, moins ton solde hypothécaire.
+              C&apos;est le montant qui pourrait servir à rembourser tes autres dettes et à les
+              regrouper dans un seul paiement.
+            </p>
+          </div>
+        )}
 
         {/* Cartes */}
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <ResultCard
             label="Économie mensuelle estimée"
-            value={hasSavings ? `${formatCurrency(result.estimatedMonthlySavings)} / mois` : "À valider"}
+            value={showFigures ? `${formatCurrency(result.estimatedMonthlySavings)} / mois` : "À valider"}
             accent="savings"
           />
           <ResultCard
             label="Économie annuelle estimée"
-            value={hasSavings ? `${formatCurrency(result.estimatedAnnualSavings)} / année` : "À valider"}
+            value={showFigures ? `${formatCurrency(result.estimatedAnnualSavings)} / année` : "À valider"}
             accent="savings"
           />
           <ResultCard label="Niveau de potentiel" value={level} accent="ai" />

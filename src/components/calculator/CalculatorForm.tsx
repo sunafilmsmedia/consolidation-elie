@@ -8,21 +8,22 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import LoadingAI from "./LoadingAI";
 import { computeLivePreview } from "@/lib/livePreview";
 import { formatCurrency } from "@/lib/format";
+import Link from "next/link";
 import {
   DEBT_AMOUNT_OPTIONS,
   DEBT_TYPE_OPTIONS,
   HAS_MORTGAGE_OPTIONS,
   INCOME_OPTIONS,
-  MORTGAGE_BALANCE_OPTIONS,
+  OWNERSHIP_OPTIONS,
   PRIMARY_GOAL_OPTIONS,
   PROPERTY_VALUE_OPTIONS,
-  URGENCY_OPTIONS,
-  USER_STATUS_OPTIONS,
   type ChoiceOption,
+  type OwnershipChoice,
 } from "./questions";
+import { calculatorConfig } from "@/lib/config";
 
 type StepKey =
-  | "userStatus"
+  | "ownership"
   | "primaryGoal"
   | "debtTypes"
   | "totalDebtAmount"
@@ -32,10 +33,10 @@ type StepKey =
   | "mortgageBalance"
   | "mortgageMonthlyPayment"
   | "income"
-  | "urgency"
   | "contact";
 
 interface Answers extends Partial<CalculatorInput> {
+  ownership?: OwnershipChoice;
   hasMortgageChoice?: string;
   dontKnowMortgagePayment?: boolean;
   fullName?: string;
@@ -43,14 +44,12 @@ interface Answers extends Partial<CalculatorInput> {
 
 // Étapes à choix unique : un clic sélectionne ET avance instantanément.
 const AUTO_ADVANCE_STEPS = new Set<StepKey>([
-  "userStatus",
+  "ownership",
   "primaryGoal",
   "totalDebtAmount",
   "hasMortgage",
   "propertyValue",
-  "mortgageBalance",
   "income",
-  "urgency",
 ]);
 
 export default function CalculatorForm() {
@@ -60,24 +59,26 @@ export default function CalculatorForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isOwner = answers.userStatus === "owner";
+  const isOwner = answers.ownership === "owner";
+  const notOwner = answers.ownership === "not_owner";
   const hasMortgage = answers.hasMortgageChoice === "yes" || answers.hasMortgageChoice === "unsure";
 
   const steps = useMemo<StepKey[]>(() => {
+    // Tout le monde qui poursuit est propriétaire : les questions sur la
+    // propriété sont donc toujours posées.
     const base: StepKey[] = [
-      "userStatus",
+      "ownership",
       "primaryGoal",
       "debtTypes",
       "totalDebtAmount",
       "currentDebtMonthlyPayment",
+      "hasMortgage",
+      "propertyValue",
     ];
-    if (isOwner) {
-      base.push("hasMortgage", "propertyValue");
-      if (hasMortgage) base.push("mortgageBalance", "mortgageMonthlyPayment");
-    }
-    base.push("income", "urgency", "contact");
+    if (hasMortgage) base.push("mortgageBalance", "mortgageMonthlyPayment");
+    base.push("income", "contact");
     return base;
-  }, [isOwner, hasMortgage]);
+  }, [hasMortgage]);
 
   const clampedIndex = Math.min(stepIndex, steps.length - 1);
   const currentStep = steps[clampedIndex];
@@ -146,6 +147,50 @@ export default function CalculatorForm() {
     return (
       <main className="min-h-screen bg-gradient-to-b from-black via-[#04130f] to-black text-white">
         <LoadingAI />
+      </main>
+    );
+  }
+
+  // Filtre : sans propriété, la consolidation via un courtier hypothécaire ne
+  // s'applique pas. On arrête le parcours ici, sans générer de lead.
+  if (notOwner) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-black via-[#04130f] to-black px-6 text-white">
+        <div className="max-w-lg animate-fadeUp text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/5 text-2xl">
+            🔑
+          </span>
+          <h1 className="mt-6 text-2xl font-extrabold leading-tight sm:text-3xl">
+            Cet outil est conçu pour les propriétaires
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-slate-300">
+            La consolidation par un courtier hypothécaire repose sur l&apos;équité de ta
+            propriété : on refinance l&apos;hypothèque pour rembourser tes autres dettes et te
+            ramener à un seul paiement. Sans propriété, cette avenue ne s&apos;applique
+            malheureusement pas.
+          </p>
+          <p className="mt-3 text-sm text-slate-400">
+            Si tu deviens propriétaire un jour, ou si tu as une propriété au nom d&apos;un proche,
+            reviens nous voir — {calculatorConfig.brokerName} pourra analyser tes options.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              onClick={() => {
+                update({ ownership: undefined });
+                setStepIndex(0);
+              }}
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/15 px-6 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
+            >
+              Revenir en arrière
+            </button>
+            <Link
+              href="/"
+              className="inline-flex h-12 items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-6 text-sm font-extrabold text-black shadow-glow transition hover:brightness-110"
+            >
+              Retour à l&apos;accueil
+            </Link>
+          </div>
+        </div>
       </main>
     );
   }
@@ -219,8 +264,8 @@ export default function CalculatorForm() {
 
 function validateStep(step: StepKey, a: Answers): boolean {
   switch (step) {
-    case "userStatus":
-      return !!a.userStatus;
+    case "ownership":
+      return !!a.ownership;
     case "primaryGoal":
       return !!a.primaryGoal;
     case "debtTypes":
@@ -242,8 +287,6 @@ function validateStep(step: StepKey, a: Answers): boolean {
       );
     case "income":
       return !!a.householdIncomeRange;
-    case "urgency":
-      return !!a.urgencyLevel;
     case "contact":
       return (
         !!a.fullName?.trim() &&
@@ -260,7 +303,7 @@ function validateStep(step: StepKey, a: Answers): boolean {
 /* ------------------------------- Payload final ------------------------------ */
 
 function buildPayload(a: Answers): CalculatorInput {
-  const ownsProperty = a.userStatus === "owner";
+  // Seuls les propriétaires atteignent cette étape (filtre en amont).
   const propertyPaid = a.hasMortgageChoice === "no";
 
   // "Nom complet" → prénom (premier mot) + nom (le reste), pour le CRM et l'IA.
@@ -273,19 +316,17 @@ function buildPayload(a: Answers): CalculatorInput {
     lastName,
     email: a.email?.trim() ?? "",
     phone: a.phone?.trim() ?? "",
-    userStatus: a.userStatus!,
+    userStatus: "owner",
     primaryGoal: a.primaryGoal!,
     debtTypes: a.debtTypes ?? [],
     totalDebtAmount: a.totalDebtAmount ?? 0,
     currentDebtMonthlyPayment: a.currentDebtMonthlyPayment,
-    ownsProperty,
-    hasMortgage: ownsProperty ? !propertyPaid : undefined,
-    propertyValue: ownsProperty ? a.propertyValue : undefined,
-    mortgageBalance: ownsProperty ? (propertyPaid ? 0 : a.mortgageBalance) : undefined,
-    mortgageMonthlyPayment:
-      ownsProperty && !a.dontKnowMortgagePayment ? a.mortgageMonthlyPayment : undefined,
+    ownsProperty: true,
+    hasMortgage: !propertyPaid,
+    propertyValue: a.propertyValue,
+    mortgageBalance: propertyPaid ? 0 : a.mortgageBalance,
+    mortgageMonthlyPayment: a.dontKnowMortgagePayment ? undefined : a.mortgageMonthlyPayment,
     householdIncomeRange: a.householdIncomeRange,
-    urgencyLevel: a.urgencyLevel!,
     consentContact: a.consentContact === true,
   };
 }
@@ -308,13 +349,13 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
   };
 
   switch (step) {
-    case "userStatus":
+    case "ownership":
       return (
         <SingleChoice
-          title="Quelle est ta situation actuelle?"
-          options={USER_STATUS_OPTIONS}
-          value={answers.userStatus}
-          onSelect={(v) => pick({ userStatus: v })}
+          title="Es-tu propriétaire de ta maison ou de ton condo?"
+          options={OWNERSHIP_OPTIONS}
+          value={answers.ownership}
+          onSelect={(v) => pick({ ownership: v })}
         />
       );
     case "primaryGoal":
@@ -377,11 +418,15 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
       );
     case "mortgageBalance":
       return (
-        <RangeChoice
-          title="Combien reste-t-il environ sur ton hypothèque?"
-          options={MORTGAGE_BALANCE_OPTIONS}
+        <NumberWithUnknown
+          title="Combien te reste-t-il à payer sur ton hypothèque?"
+          placeholder="Ex. 300 000 $"
+          greenHint="Entre un montant approximatif — « environ » suffit."
           value={answers.mortgageBalance}
-          onSelect={(v) => pick({ mortgageBalance: v })}
+          unknown={false}
+          allowUnknown={false}
+          onValue={(v) => update({ mortgageBalance: v })}
+          onUnknown={() => {}}
         />
       );
     case "mortgageMonthlyPayment":
@@ -406,15 +451,6 @@ function StepContent({ step, answers, update, advance }: StepContentProps) {
           options={INCOME_OPTIONS}
           value={answers.householdIncomeRange}
           onSelect={(v) => pick({ householdIncomeRange: v })}
-        />
-      );
-    case "urgency":
-      return (
-        <SingleChoice
-          title="À quel point aimerais-tu réduire tes paiements rapidement?"
-          options={URGENCY_OPTIONS}
-          value={answers.urgencyLevel}
-          onSelect={(v) => pick({ urgencyLevel: v })}
         />
       );
     case "contact":
@@ -574,6 +610,7 @@ function NumberWithUnknown({
   onValue,
   onUnknown,
   allowUnknown = true,
+  greenHint,
 }: {
   title: string;
   placeholder: string;
@@ -582,6 +619,7 @@ function NumberWithUnknown({
   onValue: (v: number | undefined) => void;
   onUnknown: () => void;
   allowUnknown?: boolean;
+  greenHint?: string;
 }) {
   return (
     <div>
@@ -601,6 +639,9 @@ function NumberWithUnknown({
           className="h-14 w-full rounded-2xl border border-white/15 bg-white/5 px-5 text-lg text-white placeholder:text-slate-500 focus:border-ai focus:outline-none disabled:opacity-40"
         />
       </div>
+      {greenHint && (
+        <p className="mt-2 text-sm font-semibold text-savings">{greenHint}</p>
+      )}
       {allowUnknown && (
         <>
           <button
