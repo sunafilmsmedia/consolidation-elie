@@ -72,6 +72,8 @@ export function buildCrmPayload(
 
 export interface CrmSyncResult {
   ok: boolean;
+  /** Vrai si CRM_WEBHOOK_URL est défini (sinon l'envoi est simulé). */
+  configured: boolean;
   error?: string;
 }
 
@@ -88,7 +90,7 @@ export async function sendToCrm(payload: CrmPayload): Promise<CrmSyncResult> {
 
   if (!webhook) {
     console.log("[CRM STUB] Lead prêt à être envoyé:", JSON.stringify(payload, null, 2));
-    return { ok: true };
+    return { ok: true, configured: false };
   }
 
   try {
@@ -98,10 +100,10 @@ export async function sendToCrm(payload: CrmPayload): Promise<CrmSyncResult> {
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      return { ok: false, error: `CRM_SYNC_FAILED: HTTP ${res.status}` };
+      return { ok: false, configured: true, error: `CRM_SYNC_FAILED: HTTP ${res.status}` };
     }
-    return { ok: true };
+    return { ok: true, configured: true };
   } catch (e) {
-    return { ok: false, error: `CRM_SYNC_FAILED: ${(e as Error).message}` };
+    return { ok: false, configured: true, error: `CRM_SYNC_FAILED: ${(e as Error).message}` };
   }
 }
