@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Thermometer from "@/components/ui/Thermometer";
 import BrokerCard from "@/components/ui/BrokerCard";
+import TrackedLink from "@/components/ui/TrackedLink";
 
 export default function LandingPage() {
   return (
@@ -39,12 +39,13 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Link
+            <TrackedLink
               href="/calculator"
+              event="ViewContent"
               className="inline-flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-brand to-ai px-8 text-base font-extrabold text-black shadow-glow transition hover:brightness-110 sm:w-auto"
             >
               Calculer mon potentiel d&apos;économie
-            </Link>
+            </TrackedLink>
           </div>
 
           <p className="mt-4 text-sm text-slate-400">
