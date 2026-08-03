@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { calculatorConfig } from "@/lib/config";
 
 const PHONE_DISPLAY = "819 210 7843";
 const PHONE_TEL = "+18192107843";
@@ -43,8 +44,17 @@ export default function BrokerCard() {
       </div>
 
       <a
-        href={`tel:${PHONE_TEL}`}
+        href={calculatorConfig.calendarLink}
+        target="_blank"
+        rel="noreferrer"
         className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand to-ai text-sm font-extrabold text-black shadow-glow transition hover:brightness-110"
+      >
+        <span aria-hidden>📅</span> Prendre rendez-vous
+      </a>
+
+      <a
+        href={`tel:${PHONE_TEL}`}
+        className="mt-2.5 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-white/15 text-sm font-semibold text-slate-200 transition hover:bg-white/5"
       >
         <span aria-hidden>📞</span> Appeler {PHONE_DISPLAY}
       </a>
