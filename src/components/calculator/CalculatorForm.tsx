@@ -214,8 +214,13 @@ export default function CalculatorForm() {
                   Estimation en direct
                 </span>
                 <p className="mt-0.5 text-xl font-extrabold text-neon">
-                  {formatCurrency(previewLow)} – {formatCurrency(previewHigh)}
+                  <span className="select-none blur-[7px]">
+                    {formatCurrency(previewLow)} – {formatCurrency(previewHigh)}
+                  </span>
                   <span className="ml-1 text-xs font-semibold text-white/60">/ mois</span>
+                </p>
+                <p className="mt-0.5 text-[10px] font-medium text-white/50">
+                  🔒 Débloque le montant à la fin
                 </p>
               </div>
             </div>
@@ -710,8 +715,13 @@ function ContactStep({
           <>
             <p className="mt-1 text-sm text-white/70">Tu pourrais potentiellement économiser</p>
             <p className="mt-0.5 text-2xl font-extrabold text-neon sm:text-3xl">
-              {formatCurrency(low)} – {formatCurrency(high)}
+              <span className="select-none blur-[8px]">
+                {formatCurrency(low)} – {formatCurrency(high)}
+              </span>
               <span className="ml-1 text-sm font-semibold text-white/60">/ mois</span>
+            </p>
+            <p className="mt-1.5 text-xs font-semibold text-neon">
+              🔒 Laisse tes coordonnées ci-dessous pour dévoiler ton montant
             </p>
           </>
         ) : (
