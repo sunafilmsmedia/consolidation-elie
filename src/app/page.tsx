@@ -26,7 +26,7 @@ export default function LandingPage() {
             <span className="neon-word inline-block pr-1 align-baseline text-[1.15em] leading-none">
               économiser
             </span>{" "}
-            chaque mois en consolidant tes dettes?
+            en consolidant tes dettes?
           </h1>
 
           <p className="ai-gradient-text mt-6 text-lg font-semibold">
