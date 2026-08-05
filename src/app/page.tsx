@@ -29,12 +29,7 @@ export default function LandingPage() {
             chaque mois en consolidant tes dettes?
           </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-lg text-slate-300">
-            Réponds à quelques questions simples et notre calculateur intelligent estimera si une
-            consolidation ou un refinancement pourrait réduire tes paiements mensuels.
-          </p>
-
-          <p className="ai-gradient-text mt-4 text-lg font-semibold">
+          <p className="ai-gradient-text mt-6 text-lg font-semibold">
             Analyse intelligente propulsée par l&apos;IA
           </p>
 
